@@ -12,6 +12,7 @@ Queue* queue_init(){
     .n3 = 0,
     .n4 = 0,
     .f = 0, 
+    .first = 0,
     .start = NULL,
     .end = NULL,
     .en_cpu = NULL
@@ -88,18 +89,22 @@ void sumar_numero_fabricas(int fabrica, Queue* queue){
   actualizar_f(queue);
 };
 
-void desempatar(Process** cola_procesos, Queue* queue, int cont_cola_procesos, int time)
-{
-  //Crear una cola para retornarla
+void desempatar(Process** cola_procesos, Queue* queue, int cont_cola_procesos, int time){
+  //Crear una cola que guarde los procesos ordenados segun su porioridad
   Process** cola_ordenada = calloc(cont_cola_procesos, sizeof(Process*)); 
   int cont_cola_ordenada = 0;
   int m = 0;
+  int result;
+  Process* current = NULL;
   
   mergeSort2(cola_procesos, 0, cont_cola_procesos-1);
 
   if (cont_cola_procesos == 1) 
   {
     //Llegar y meter
+    queue->end->next = cola_procesos[0];
+    cola_procesos[0]->prev = queue->end;
+    queue->end = cola_procesos[0];
   }
 
   else
@@ -108,40 +113,39 @@ void desempatar(Process** cola_procesos, Queue* queue, int cont_cola_procesos, i
     {
       if (cola_procesos[i]->start < time) //Revisamos si el proceso salió de la CPU
       {
-       cola_ordenada[cont_cola_ordenada] = cola_procesos[i];
-       cont_cola_ordenada += 1;
+        cola_ordenada[cont_cola_ordenada] = cola_procesos[i];
+        cont_cola_ordenada += 1;
       }
     }
-
 
     while (m < cont_cola_procesos)
     {
       if ((cola_procesos[m]->start == time) && (m+1 < cont_cola_procesos)) //Revisamos si es un proceso nuevo
       {
-       if (cola_procesos[m]->fabrica == cola_procesos[m+1]->fabrica)
-       {
-         int result = strcmp(cola_procesos[m]->name, cola_procesos[m+1]->name);
-         if (result < 0)
-         {
-           cola_ordenada[cont_cola_ordenada] = cola_procesos[m];
-           cola_ordenada[cont_cola_ordenada] = cola_procesos[m+1];
-           cont_cola_ordenada += 2;
-           m += 2;
-         }
-         else 
-         {
-           cola_ordenada[cont_cola_ordenada] = cola_procesos[m+1];
-           cola_ordenada[cont_cola_ordenada] = cola_procesos[m];
-           cont_cola_ordenada += 2;
-           m += 2;
-         }
-       }
-       else
-       {
-        cola_ordenada[cont_cola_ordenada] = cola_procesos[m];
-        cont_cola_ordenada += 1;
-        m += 1;
-       } 
+        if (cola_procesos[m]->fabrica == cola_procesos[m+1]->fabrica)
+        {
+          result = strcmp(cola_procesos[m]->name, cola_procesos[m+1]->name);
+          if (result < 0)
+          {
+            cola_ordenada[cont_cola_ordenada] = cola_procesos[m];
+            cola_ordenada[cont_cola_ordenada] = cola_procesos[m+1];
+            cont_cola_ordenada += 2;
+            m += 2;
+          }
+          else 
+          {
+            cola_ordenada[cont_cola_ordenada] = cola_procesos[m+1];
+            cola_ordenada[cont_cola_ordenada] = cola_procesos[m];
+            cont_cola_ordenada += 2;
+            m += 2;
+          }
+        }
+        else
+        {
+          cola_ordenada[cont_cola_ordenada] = cola_procesos[m];
+          cont_cola_ordenada += 1;
+          m += 1;
+        } 
       }
       else if ((cola_procesos[m]->start == time) && (m+1 == cont_cola_procesos))
       {
@@ -149,25 +153,67 @@ void desempatar(Process** cola_procesos, Queue* queue, int cont_cola_procesos, i
         cont_cola_ordenada += 1;
         m += 1;
       }
+      else
+      {
+        m += 1; 
+      }
     }
-    //Ahora, con la colaordenada lista, hay que agregar los elementos de colaordenana a la queue original.
-
-     //1) Iterar sobre los procesos de cola procesos
-
-    //2) Si proceso salió recién de la CPU (su start es menor que el time), se mete primero (indpte si estaba waiting o ready)
-    //Y no se mete a revisar ese proceso en lo que viene abajo
-
-    //4) si proceso->start == time, tiene prioridad 3 
-    //5) si tienen el mismo time, se debe comparar el num de fabrica y elegir el con menor numero
-    //6) si además de la misma fábrica, se debe comparar el largo del string con strcmp()
-    
-
-    
-
-    //queue->end->next = current;
-    //current->prev = queue->end;
-    //queue->end = current;
+    //Ahora, con cola_ordenada lista, hay que agregar los elementos de cola_ordenana a la queue original.
+    cont_cola_ordenada = 0;
+    if (!queue->first)
+    {
+      //Llegar y meter
+      queue->start = cola_ordenada[0];
+      queue->end = cola_ordenada[0];
+      queue->first = 1;
+      cont_cola_ordenada += 1;
+      while (cont_cola_ordenada < cont_cola_procesos)
+      {
+        current = cola_ordenada[cont_cola_ordenada];
+        queue->end->next = current;
+        current->prev = queue->end;
+        queue->end = current;
+        cont_cola_ordenada += 1;
+      }
+    }
+    else
+    {
+      while (cont_cola_ordenada < cont_cola_procesos)
+      {
+        current = cola_ordenada[cont_cola_ordenada];
+        queue->end->next = current;
+        current->prev = queue->end;
+        queue->end = current;
+        cont_cola_ordenada += 1;
+      }
+    }
   }
 
   free(cola_ordenada);
+};
+
+int calcular_quantum(Queue* queue, int Q, int fabrica)
+{
+  int quantum;
+  int denom;
+  int ni;
+  if (fabrica == 1)
+  {
+    ni = queue->n1;
+  }
+  else if (fabrica == 2)
+  {
+    ni = queue->n2;
+  }
+  else if (fabrica == 3)
+  {
+    ni = queue->n3;
+  }
+  else if (fabrica == 4)
+  {
+    ni = queue->n4;
+  }
+  denom = (ni*queue->f);
+  quantum = Q/denom;
+  return quantum;
 };

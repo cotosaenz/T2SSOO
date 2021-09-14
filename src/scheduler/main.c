@@ -57,6 +57,8 @@ int main(int argc, char **argv)
   // ahora empieza a funcionar el scheduler
   printf("si %s\n", procesos_ordenada[N-1]->name);
   int time = 0;
+  Process* keep = NULL;
+  Process* nuevo_start = NULL;
   Process** cola_procesos = calloc(8, sizeof(Process*));
   int cont_cola_procesos = 0;
   Process* current = NULL;
@@ -97,6 +99,7 @@ int main(int argc, char **argv)
         printf("[t=%i] Proceso %s pasa a WAITING!\n", time, current->name);
         sumar_numero_fabricas(cola_procesos[cont_cola_procesos]->fabrica, queue);
         current = NULL;
+        queue->en_cpu = NULL;
       }
       else if ((current->array_rafagas[current->contador_rafagas] == 0) && (current->contador_rafagas+1 == current->n_rafagas))
       {
@@ -104,6 +107,7 @@ int main(int argc, char **argv)
         printf("[t=%i] Proceso %s ha terminado!\n", time, current->name);
         // actualizar valores de archivo output
         current = NULL;
+        queue->en_cpu = NULL;
       }
       else if (current->quantum == 0)
       {
@@ -122,21 +126,61 @@ int main(int argc, char **argv)
         printf("[t=%i] Proceso %s pasa a READY!\n", time, current->name);
         sumar_numero_fabricas(current->fabrica, queue);
         current = NULL;
+        queue->en_cpu = NULL;
       }
       else
       {
+        printf("%s sigo corriendo\n", current->name);
         current->quantum -= 1;
         current->array_rafagas[current->contador_rafagas] -= 1;
       }
     }
-    
+    if (!queue->first)
+    {
+      if (cont_cola_procesos == 1) 
+      {
+        //Llegar y meter
+        queue->start = cola_procesos[0];
+        queue->end = cola_procesos[0];
+        queue->first = 1;
+      }
+    }
+    // desempatan acorde a sus prioridades todos los procesos que llegan a la cola en ese instante
     if (cont_cola_procesos > 0)
     {
       desempatar(cola_procesos, queue, cont_cola_procesos, time);
     }
 
-    // desempatar
     // agregar a la cola y seguir corriendo
+    if ((!queue->en_cpu) && queue->start)
+    {
+      if (queue->start->state == "READY")
+      {
+        nuevo_start = queue->start->next;
+        queue->start->quantum = calcular_quantum(queue, Q, queue->start->fabrica);
+        queue->start->next->prev = NULL;
+        queue->start->next = NULL;
+        queue->en_cpu = queue->start;
+        queue->start = nuevo_start;
+      }
+      else if (queue->start->state == "WAITING")
+      {
+        keep = queue->start->next;
+        while ((keep) && (keep->state == "WAITING"))
+        {
+          keep = keep->next;
+        }
+        if ((keep) && (keep->state == "READY"))
+        {
+          keep->prev->next = keep->next;
+          keep->next->prev = keep->prev;
+          keep->prev = NULL;
+          keep->next = NULL;
+          queue->en_cpu = keep;
+          keep = NULL;
+        }
+      }
+    }
 
     cont_cola_procesos = vaciar_cola_procesos(cola_procesos);
     time += 1;  

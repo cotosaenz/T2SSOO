@@ -9,6 +9,7 @@ typedef struct queue
   int n3;
   int n4;
   int f;                   // cantidad de fabricas con al menos 1 proceso en ejecucion
+  int first;               // me dice si ya llego alguien al sistema 1 o 0 
   struct process* start;   // primero en la cola
   struct process* end;     // ultimo en la cola
   struct process* en_cpu;
@@ -20,3 +21,4 @@ void actualizar_f(Queue* queue);
 void restar_numero_fabricas(int fabrica, Queue* queue);
 void sumar_numero_fabricas(int fabrica, Queue* queue);
 void desempatar(Process** cola_procesos, Queue* queue, int cont_cola_procesos, int time);
+int calcular_quantum(Queue* queue, int Q, int fabrica);

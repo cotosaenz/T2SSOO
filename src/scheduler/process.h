@@ -26,3 +26,5 @@ typedef struct process
 Process* process_init(char* name, int start, int fabrica, int n_rafagas, int* array_rafagas);
 void mergeSort(Process** procesos, int l, int r);
 void merge(Process** procesos, int l, int m, int r); 
+void mergeSort2(Process** procesos, int l, int r);
+void merge2(Process** procesos, int l, int m, int r); 

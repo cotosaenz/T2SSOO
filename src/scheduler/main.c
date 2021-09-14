@@ -67,7 +67,7 @@ int main(int argc, char **argv)
     while (cont_procesos < N && procesos_ordenada[cont_procesos]->start == time)
     {
       printf("ME TOCAAAA\n");
-      cola_procesos[cont_cola_procesos] = procesos_ordenada[cont_procesos];
+      cola_procesos[cont_cola_procesos] = procesos_ordenada[cont_procesos]; //Se agrega a la cola procesos el proceso que llega por primera vez
       sumar_numero_fabricas(cola_procesos[cont_cola_procesos]->fabrica, queue);
       cont_cola_procesos += 1;
       cont_procesos += 1;
@@ -92,6 +92,7 @@ int main(int argc, char **argv)
           queue->end->next = current;
           current->prev = queue->end;
           queue->end = current;
+          //Falta actualizar estado, calcular quantum y correr el proceso
         }
         printf("[t=%i] Proceso %s pasa a WAITING!\n", time, current->name);
         sumar_numero_fabricas(cola_procesos[cont_cola_procesos]->fabrica, queue);
@@ -116,6 +117,7 @@ int main(int argc, char **argv)
           queue->end->next = current;
           current->prev = queue->end;
           queue->end = current;
+          //Falta actualizar estado, calcular quantum y correr el proceso
         }
         printf("[t=%i] Proceso %s pasa a READY!\n", time, current->name);
         sumar_numero_fabricas(current->fabrica, queue);
@@ -137,7 +139,7 @@ int main(int argc, char **argv)
     // agregar a la cola y seguir corriendo
 
     cont_cola_procesos = vaciar_cola_procesos(cola_procesos);
-    time += 1;
+    time += 1;  
   }
 
 

@@ -78,3 +78,57 @@ void mergeSort(Process** procesos, int l, int r)
     merge(procesos, l, m, r);
   }
 }
+
+
+void merge2(Process** procesos, int l, int m, int r)
+{
+  int i, j, k;
+  int n1 = m - l + 1;
+  int n2 = r - m;
+  Process* L[n1];
+  Process* R[n2];
+  for (i = 0; i < n1; i++)
+  {
+    L[i] = procesos[l + i];
+  }
+  for (j = 0; j < n2; j++)
+  {
+    R[j] = procesos[m + 1 + j];
+  }
+  i = 0; 
+  j = 0; 
+  k = l; 
+  while (i < n1 && j < n2) {
+    if (L[i]->fabrica <= R[j]->fabrica) {
+      procesos[k] = L[i];
+      i++;
+    }
+    else {
+      procesos[k] = R[j];
+      j++;
+    }
+    k++;
+  }
+  while (i < n1) {
+    procesos[k] = L[i];
+    i++;
+    k++;
+  }
+  while (j < n2) {
+    procesos[k] = R[j];
+    j++;
+    k++;
+  }
+}
+
+void mergeSort2(Process** procesos, int l, int r)
+{
+  if (l < r) {
+    int m = l + (r - l) / 2;
+    mergeSort(procesos, l, m);
+    mergeSort(procesos, m + 1, r);
+    merge(procesos, l, m, r);
+  }
+}
+
+

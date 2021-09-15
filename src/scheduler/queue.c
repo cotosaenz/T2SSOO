@@ -102,9 +102,23 @@ void desempatar(Process** cola_procesos, Queue* queue, int cont_cola_procesos, i
   if (cont_cola_procesos == 1) 
   {
     //Llegar y meter
-    queue->end->next = cola_procesos[0];
-    cola_procesos[0]->prev = queue->end;
-    queue->end = cola_procesos[0];
+    if (!queue->first)
+    {
+      queue->first = 1;
+      queue->start = cola_procesos[0];
+      queue->end = cola_procesos[0];
+      cola_procesos[0]->state = "READY";
+    }
+    else
+    {
+      if (!cola_procesos[0]->estoy)
+      {
+        queue->end->next = cola_procesos[0];
+        cola_procesos[0]->prev = queue->end;
+        queue->end = cola_procesos[0];
+        cola_procesos[0]->state = "READY";
+      }
+    }
   }
 
   else
@@ -216,4 +230,27 @@ int calcular_quantum(Queue* queue, int Q, int fabrica)
   denom = (ni*queue->f);
   quantum = Q/denom;
   return quantum;
+};
+
+void actualizar_tiempos(Queue* queue, int time){
+  Process* current = queue->start;
+  while (current)
+  {
+    if (strcmp(current->state, "WAITING") == 0)
+    {
+      current->array_rafagas[current->contador_rafagas] -= 1;
+      if (current->array_rafagas[current->contador_rafagas] == 0)
+      {
+        current->contador_rafagas += 1;
+        current->rafaga_next = 0;
+        current->state = "READY";
+        printf("[t = %i] El proceso %s ha pasado a estado READY!\n", time, current->name);
+      }
+    }
+    else if (strcmp(current->state, "READY") == 0)
+    {
+      current->waiting_time += 1;
+    }
+    current = current->next;
+  }
 };

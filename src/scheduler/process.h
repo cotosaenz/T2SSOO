@@ -8,6 +8,8 @@ typedef struct process
   int start;             // tiempo de inicio
   int fabrica;           // fabrica del proceso
   int n_rafagas;           // total de rafagas del proceso A-B
+  int estoy;
+  int first_time;
   int contador_rafagas;   // me dice la rafaga en la que esta el proceso
   int* array_rafagas;    // arreglo con todas las rafagas del proceso, A-B
   int rafaga_next;       // 1 o 0, me indica la rafaga que viene despues, A o B
@@ -23,8 +25,10 @@ typedef struct process
   int waiting_time;      // suma de tiempo entre WAITING y READY  
 } Process;
 
+void sumar_waiting(Process* process);
 Process* process_init(char* name, int start, int fabrica, int n_rafagas, int* array_rafagas);
 void mergeSort(Process** procesos, int l, int r);
 void merge(Process** procesos, int l, int m, int r); 
 void mergeSort2(Process** procesos, int l, int r);
 void merge2(Process** procesos, int l, int m, int r); 
+void escribir_output(Process** procesos, char* output_file, int cont_procesos);

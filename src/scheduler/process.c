@@ -2,6 +2,13 @@
 #include <stdlib.h>
 #include "process.h"
 
+void sumar_waiting(Process* process){
+  for (int i=1; i<process->n_rafagas; i+=2)
+  {
+    process->waiting_time += process->array_rafagas[i];
+  }
+};
+
 Process* process_init(char* name, int start, int fabrica, int n_rafagas, int* array_rafagas){
   Process* process = malloc(sizeof(Process));
   *process = (Process)
@@ -10,6 +17,8 @@ Process* process_init(char* name, int start, int fabrica, int n_rafagas, int* ar
     .start = start,
     .fabrica = fabrica,
     .n_rafagas = (n_rafagas*2)-1,
+    .estoy = 0,
+    .first_time = 0,
     .contador_rafagas = 0,
     .rafaga_next = 0,
     .array_rafagas = array_rafagas,
@@ -24,6 +33,7 @@ Process* process_init(char* name, int start, int fabrica, int n_rafagas, int* ar
     .response_time = 0,
     .waiting_time = 0
   };
+  sumar_waiting(process);
   return process;
 };
 
@@ -132,3 +142,21 @@ void mergeSort2(Process** procesos, int l, int r)
 }
 
 
+void escribir_output(Process** procesos, char* output_file, int cont_procesos){
+  char *modo = "w";
+  FILE *archivo1 = fopen(output_file, modo);
+  Process* current = NULL;
+  for (int i=0; i<cont_procesos; i++)\
+  {
+    current = procesos[i];
+    if (i == cont_procesos-1)
+    {
+      fprintf(archivo1, "%s,%d,%d,%d,%d,%d", current->name, current->elegido, current->interrumpido, current->turnaround_time, current->response_time, current->waiting_time);
+    }
+    else
+    {
+      fprintf(archivo1, "%s,%d,%d,%d,%d,%d\n", current->name, current->elegido, current->interrumpido, current->turnaround_time, current->response_time, current->waiting_time);
+    }
+  }
+  fclose(archivo1);
+};

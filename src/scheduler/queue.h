@@ -22,3 +22,4 @@ void restar_numero_fabricas(int fabrica, Queue* queue);
 void sumar_numero_fabricas(int fabrica, Queue* queue);
 void desempatar(Process** cola_procesos, Queue* queue, int cont_cola_procesos, int time);
 int calcular_quantum(Queue* queue, int Q, int fabrica);
+void actualizar_tiempos(Queue* queue, int time);
